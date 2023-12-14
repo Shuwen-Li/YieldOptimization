@@ -1,7 +1,26 @@
 import pandas as pd 
 import numpy as np
 import seaborn as sns
+from script.load_dataset import chemical_space
+from sklearn import linear_model
+from sklearn import tree
+from sklearn.kernel_ridge import KernelRidge
+from sklearn.svm import SVR, LinearSVR
+from sklearn.neighbors import KNeighborsRegressor
+from sklearn.ensemble import RandomForestRegressor,ExtraTreesRegressor,AdaBoostRegressor,\
+ExtraTreesClassifier,RandomForestClassifier,GradientBoostingRegressor,BaggingRegressor
+import xgboost as xgb
 from scipy.stats import pearsonr
+from sklearn.model_selection import KFold
+from sklearn.linear_model import LinearRegression
+
+models = [BaggingRegressor(n_jobs=60),
+          tree.DecisionTreeRegressor(),ExtraTreesRegressor(n_jobs=60),GradientBoostingRegressor(),
+          KNeighborsRegressor(),KernelRidge(),
+          LinearSVR(),RandomForestRegressor(n_jobs=60),
+          linear_model.Ridge(alpha=.5),SVR(), xgb.XGBRegressor(n_jobs=60)]
+model_names = ['BG','DT','ET','GB','KNR','KRR','LSVR','RF','Ridge','SVR','XGB']
+
 
 def format_output(condition):
     condition = np.array(condition)
@@ -77,3 +96,19 @@ def plot_scatter(performance_dict,model_des_name):
     plt.text(2,62,'Pearson R = %.3f'%pearsonr(y_val,y_pred)[0],fontsize=40)
     plt.subplots_adjust(left=0.15, right=0.95, top=0.9, bottom=0.1)
     plt.show()
+
+def get_sorted_pre_yield_ep(ep_space,model_name,input_index,des_std,labels_std,selected_feature):
+
+    des_sel = des_std[:,selected_feature]
+    test_index = np.delete(np.array(range(len(labels_std)+ep_space.shape[0])),input_index)
+    train_x,test_x = des_sel[input_index].reshape(len(labels_std),-1),des_sel[test_index].reshape(ep_space.shape[0],-1)
+    train_y = labels_std
+    model = models[model_names.index(model_name)]
+    model.fit(train_x,train_y)
+    test_pred = model.predict(test_x)
+    test_sort_index=sorted([[i,j] for i,j in zip(test_index,test_pred)],\
+                           key=lambda x:x[1],reverse=True)
+    result = []
+    for index,i in enumerate(test_sort_index):
+        result.append([index+1]+list(ep_space[i[0]-len(labels_std)]))
+    return result,test_sort_index
