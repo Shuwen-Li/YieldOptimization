@@ -13,7 +13,7 @@ In order to run Jupyter Notebook involved in this repository, several third-part
   - scipy==1.8.1
 ```
 # Demo & Instructions for use
-Notebook round1-round11 includes processes for productivity optimization.
+Notebook Example includes processes for productivity optimization.
 
 ## How to cite
 The paper is under review.
