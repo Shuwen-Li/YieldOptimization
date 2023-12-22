@@ -266,3 +266,51 @@ def get_all_max100(results_all_cycle):
     yield_80 = recorded_max_mean[num_80]
     yield_90 = recorded_max_mean[num_90]
     return all_max100,num_80,num_90,yield_80,yield_90
+
+def get_all_max100_2(results_all_cycle):
+    all_max100=[]
+    for cycle in results_all_cycle:
+
+        tem_max100=[]
+        for exp in range(50):
+            tem_max100.append(max(cycle[:exp+1]))
+        if len(tem_max100)==50:
+            all_max100.append(tem_max100)
+        else:
+            all_max100.append(tem_max100)
+            all_max100.append([tem_max100[-1]]*(50-len(tem_max100)))
+            print([tem_max100[-1]]*(50-len(tem_max100)))
+    all_max100=np.array(all_max100)
+    recorded_max_mean = np.array(all_max100).mean(axis=0)
+    num_80 = np.where(recorded_max_mean>80)[0][0] 
+    num_85 = np.where(recorded_max_mean>85)[0][0]
+    num_90 = np.where(recorded_max_mean>90)[0][0]
+    yield_80 = recorded_max_mean[num_80]
+    yield_85 = recorded_max_mean[num_85]
+    yield_90 = recorded_max_mean[num_90]
+    return all_max100,num_80,num_85,num_90,yield_80,yield_85,yield_90
+def plt_figure3(recorded_max_mean1,recorded_max_mean3):
+    plt.title('Comparation',fontsize=15)
+    plt.plot([tmp_item+1 for tmp_item in list(range(len(recorded_max_mean1)))],recorded_max_mean1,linewidth=3,c='blue')
+    plt.plot([tmp_item+1 for tmp_item in list(range(len(recorded_max_mean3)))],recorded_max_mean3,linewidth=3,c='red')
+    plt.xlabel('Experiment Number')
+    plt.ylabel('Yield')
+def plot_figure4(all_max100,num_80,num_90,yield_80,yield_90,c1='lightblue',c2='blue',title=''):
+    plt.title(title,fontsize=15)
+    plt.xlabel('Experiment Number')
+    plt.ylabel('Yield')
+    plt.ylim([0,100])
+    plt.xlim([0,50])
+    for recorded_max in all_max100:
+        plt.plot([tmp_item+1 for tmp_item in  list(range(len(recorded_max)))],recorded_max,linewidth=1,c=c1,alpha=0.8)
+    recorded_max_mean = np.array(all_max100).mean(axis=0)
+    plt.plot([tmp_item+1 for tmp_item in list(range(len(recorded_max_mean)))],recorded_max_mean,linewidth=3,c=c2)
+    #plt.plot([num_80+1,num_80+1],[0,yield_80],c='black',ls='--')
+    #plt.plot([0,num_80+1],[yield_80,yield_80],c='black',ls='--')
+    
+    #plt.plot([num_90+1,num_90+1],[0,yield_90],c='black',ls='--')
+    #plt.plot([0,num_90+1],[yield_90,yield_90],c='black',ls='--')#lightslategrey brown peru sienna
+    
+    #plt.text(num_80+2,1.8,num_80+1,c='black',fontsize=13)
+    #plt.text(num_90+2,1.8,num_90+1,c='black',fontsize=13)
+    return recorded_max_mean
