@@ -128,22 +128,103 @@ class Top_k():
         domain_sampled = deepcopy(domain).iloc[sampled_idx]
         domain_sampled[target] = ['<Enter the result>'] * len(domain_sampled)
         return domain_sampled
-class Top_k_add_or_total():
-    def __init__(self,train_x,train_y,model='RF',n_jobs=8):
+class Top_k_add_or_total_cn():
+    def __init__(self,train_x,train_y,random_state,model='RF',n_jobs=-1):
+        self.random_state = random_state
         self.train_x = train_x
         self.train_y = train_y
         model = model.lower()
         assert model == 'rf' or model == 'et' or model == 'xgb', 'Only support RandomForest (RF), ExtraTrees(ET) and XGBoost(XGB) currently.'
         if model == 'rf':
-            self.model = RandomForestRegressor(n_jobs=n_jobs)
+            self.model = RandomForestRegressor(n_jobs=-1,random_state=random_state)
         elif model == 'et':
-            self.model = ExtraTreesRegressor(n_jobs=n_jobs)
+            self.model = ExtraTreesRegressor(n_jobs=-1,random_state=random_state)
         elif model == 'xgb':
             self.train_x = self.train_x.numpy()
             self.train_y = self.train_y.numpy()
-            self.model = XGBRegressor(n_jobs=n_jobs)
-    def recommend(self,domain,desc_domain,result,batch_size=10,stage=1,cc1=4,cc2=3,cc3=2,cc1_num=100,cc2_num=50,cc3_num=50,space_num=3696,target = 'yield'):
+            self.model = XGBRegressor(n_jobs=-1,random_state=random_state)
+    def recommend(self,domain,desc_domain,result,batch_size=10,stage=1,cc1=3,cc2=2,cc1_num=100,cc2_num=50,space_num=3696,target = 'yield'):
+        np.random.seed(self.random_state)
         self.model.fit(self.train_x,self.train_y)
+        desc_domain_np = desc_domain.to_numpy()
+        pred = self.model.predict(desc_domain_np)
+        pred_ori=self.model.predict(desc_domain_np)
+        pred_sort=sorted(pred_ori,reverse=True)
+        sampled_idx = []
+        known_idx = [int(tmp_item) for tmp_item in result.index]
+        
+        if stage==1:
+            num=0
+            while len(sampled_idx) < batch_size and num<space_num:
+                num=num+1
+                pot_idx = pred.argmax()
+                pred[pot_idx] = -1
+                difer_min=min([count_different_columns(domain,pot_idx,i) for i in known_idx])
+                if not pot_idx in known_idx and difer_min==cc1:
+                    sampled_idx.append(pot_idx)
+                    known_idx.append(pot_idx)
+            while len(sampled_idx) < batch_size:
+                pot_idx = pred.argmax()
+                pred[pot_idx] = -1
+                if not pot_idx in known_idx:
+                    sampled_idx.append(pot_idx) 
+        elif stage==2:
+            num=0
+            while len(sampled_idx) < batch_size and num<space_num:
+                num=num+1
+                pot_idx = pred.argmax()
+                pred[pot_idx] = -1
+                difer_min=min([count_different_columns(domain,pot_idx,i) for i in known_idx])
+                if not pot_idx in known_idx and difer_min==cc2:
+                    sampled_idx.append(pot_idx) 
+                    known_idx.append(pot_idx)
+            while len(sampled_idx) < batch_size:
+                pot_idx = pred.argmax()
+                pred[pot_idx] = -1
+                if not pot_idx in known_idx:
+                    sampled_idx.append(pot_idx) 
+        elif stage==3:
+            num=0
+            while len(sampled_idx) < batch_size and num<space_num:
+                num=num+1
+                pot_idx = pred.argmax()
+                pred[pot_idx] = -1
+                if not pot_idx in known_idx:
+                    sampled_idx.append(pot_idx)
+                    known_idx.append(pot_idx)
+        tem_stage=1   
+        rank_last_sample = pred_sort.index(pred_ori[sampled_idx[-1]]) 
+        if stage==1 and rank_last_sample < cc1_num: 
+            tem_stage=1
+        elif stage==1 and rank_last_sample > cc1_num:  
+            tem_stage=2
+        elif stage==2 and rank_last_sample < cc2_num:
+            tem_stage=2
+        elif stage==2 and rank_last_sample > cc2_num:
+            tem_stage=3
+        elif stage==3:
+            tem_stage=3
+        domain_sampled = deepcopy(domain).iloc[sampled_idx]
+        domain_sampled[target] = ['<Enter the result>'] * len(domain_sampled)
+        return domain_sampled,tem_stage
+class Top_k_add_or_total_cc():
+    def __init__(self,train_x,train_y,random_state,model='RF',n_jobs=8):
+        self.random_state = random_state
+        self.train_x = train_x
+        self.train_y = train_y
+        model = model.lower()
+        assert model == 'rf' or model == 'et' or model == 'xgb', 'Only support RandomForest (RF), ExtraTrees(ET) and XGBoost(XGB) currently.'
+        if model == 'rf':
+            self.model = RandomForestRegressor(n_jobs=n_jobs,random_state=random_state)
+        elif model == 'et':
+            self.model = ExtraTreesRegressor(n_jobs=n_jobs,random_state=random_state)
+        elif model == 'xgb':
+            self.train_x = self.train_x.numpy()
+            self.train_y = self.train_y.numpy()
+            self.model = XGBRegressor(n_jobs=n_jobs,random_state=random_state)
+    def recommend(self,domain,desc_domain,result,batch_size=10,stage=1,cc1=4,cc2=3,cc3=2,cc1_num=100,cc2_num=50,cc3_num=50,space_num=3696,target = 'yield'):
+        np.random.seed(self.random_state)
+        self.model.fit(self.train_x.cpu(),self.train_y.cpu())
         desc_domain_np = desc_domain.to_numpy()
         pred = self.model.predict(desc_domain_np)
         pred_ori=self.model.predict(desc_domain_np)
