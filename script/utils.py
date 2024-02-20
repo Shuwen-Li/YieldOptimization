@@ -13,6 +13,8 @@ import xgboost as xgb
 from scipy.stats import pearsonr
 from sklearn.model_selection import KFold
 from sklearn.linear_model import LinearRegression
+import matplotlib.pyplot as plt
+from matplotlib.pyplot import MultipleLocator
 
 models = [BaggingRegressor(n_jobs=60),
           tree.DecisionTreeRegressor(),ExtraTreesRegressor(n_jobs=60),GradientBoostingRegressor(),
