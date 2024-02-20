@@ -4,7 +4,7 @@ import csv
 from os import sep
 class input_dataset:
     def __init__(self,n_round):
-        round_list = [16,20,24,26,30,34,38,42,46,50,52,68]#23,27,31,35,39,43,47,51,54,74
+        round_list = [16]
         #input experimential dataset
         df = pd.read_csv('dataset'+sep+'all_input_data.csv')[:round_list[n_round-1]]
         em = df['Anode/Cathode'].to_list()
