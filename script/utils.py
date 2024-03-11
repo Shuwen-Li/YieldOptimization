@@ -15,6 +15,11 @@ from sklearn.model_selection import KFold
 from sklearn.linear_model import LinearRegression
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import MultipleLocator
+from script.load_dataset import input_dataset
+from script.load_descriptors import get_descriptors
+from script.predict_yield import get_sorted_pre_yield
+from script.ort_select import get_orthogonal_selection
+from script.select_model import get_best_model_and_param
 
 models = [BaggingRegressor(n_jobs=60),
           tree.DecisionTreeRegressor(),ExtraTreesRegressor(n_jobs=60),GradientBoostingRegressor(),
@@ -114,3 +119,18 @@ def get_sorted_pre_yield_ep(ep_space,model_name,input_index,des_std,labels_std,s
     for index,i in enumerate(test_sort_index):
         result.append([index+1]+list(ep_space[i[0]-len(labels_std)]))
     return result,test_sort_index
+def get_results(n_round=1,model_name='KNR',best_params={'KNR':{'n_neighbors': 4}},sel_feature=[7, 29, 21, 33]):
+    Input_dataset = input_dataset(n_round=n_round)
+    yield_std = Input_dataset.yield_std
+    input_data = Input_dataset.input_data
+    input_index = Input_dataset.input_index
+    des_std = get_descriptors()
+    sorted_pre_yield = get_sorted_pre_yield(model_name=model_name,
+    input_index=input_index,des_std=des_std,yield_std=yield_std,
+    selected_feature=sel_feature,best_params=best_params)   
+    if n_round==11:
+        print(format_output(sorted_pre_yield[:20]))
+    else:
+        orthogonal_selection = get_orthogonal_selection(n_round=n_round,
+                    input_data=input_data,sorted_pre_yield=sorted_pre_yield)
+        print(format_output(orthogonal_selection))
