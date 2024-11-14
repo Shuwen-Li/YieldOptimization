@@ -24,7 +24,7 @@ Notebook Find New Opt Condition includes processes for finding optimization cond
 Folder Compare with Bayesian includes processes for comparing our optimization strategy with bayesian.
 
 
-## How to cite
+# How to cite
 Xiaoyan Hou, Shuwen Li（Co-first authors）, Johanna Frey, Xin Hong*, Lutz Ackermann*, Machine Learning-Guided Yield Optimization for Palladaelectro-Catalyzed Annulation Reaction. Chem, 10, 1 (2024).
 
 # Contact with us
