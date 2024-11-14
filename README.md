@@ -27,3 +27,5 @@ Folder Compare with Bayesian includes processes for comparing our optimization s
 ## How to cite
 Xiaoyan Hou, Shuwen Li（Co-first authors）, Johanna Frey, Xin Hong*, Lutz Ackermann*, Machine Learning-Guided Yield Optimization for Palladaelectro-Catalyzed Annulation Reaction. Chem, 10, 1 (2024).
 
+# Contact with us
+Email: shuwen_li@zju.edu.cn
